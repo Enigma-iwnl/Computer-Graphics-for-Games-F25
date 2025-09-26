@@ -2,13 +2,43 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "CMake: Configure (Sandbox)",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "-S",
+                "${workspaceFolder}",
+                "-B",
+                "${workspaceFolder}/build",
+                "-DENABLE_SANDBOX=ON"
+            ],
+            "group": "build",
+            "problemMatcher": [],
+            "detail": "Configures the project with sandbox mode enabled."
+        },
+        {
+    "label": "CMake: Configure (No Sandbox)",
+    "type": "shell",
+    "command": "cmake",
+    "args": [
+        "-S",
+        "${workspaceFolder}",
+        "-B",
+        "${workspaceFolder}/build",
+        "-DENABLE_SANDBOX=OFF"
+    ],
+    "group": "build",
+    "problemMatcher": [],
+    "detail": "Configures the project with sandbox mode disabled."
+},
+        {
             "label": "build-opengl",
             "type": "shell",
             "command": "gcc",
             "args": [
-                "${file}", // currently open file
+                "${file}",
                 "-o",
-                "${fileDirname}/${fileBasenameNoExtension}", // output executable in same folder
+                "${fileDirname}/${fileBasenameNoExtension}",
                 "-lGL",
                 "-lGLU",
                 "-lglut"
@@ -20,6 +50,19 @@
             "problemMatcher": [
                 "$clang"
             ]
+        },
+        {
+            "label": "Run OpenGLApp",
+            "type": "process",
+            "command": "${workspaceFolder}/build/OpenGLApp",
+            "dependsOn": [
+                "CMake: Build"
+            ],
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            },
+            "problemMatcher": []
         }
     ]
 }

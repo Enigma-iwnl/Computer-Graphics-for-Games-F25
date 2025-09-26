@@ -163,7 +163,7 @@ int main()
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
-    myTexture();
+    // myTexture();
     RayTracer();
 
     setupTextures();
@@ -188,6 +188,11 @@ int main()
         glClear(GL_DEPTH_BUFFER_BIT);
 
         // draw stuff here!
+        myTexture();
+
+        // Update the texture with the new data from the imageBuff
+        glBindTexture(GL_TEXTURE_2D, texture);
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 512, 512, GL_RGB, GL_UNSIGNED_BYTE, (const void *)imageBuff);
 
         drawIMGUI();
         glfwSwapBuffers(window);
