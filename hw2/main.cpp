@@ -227,9 +227,6 @@ glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
-bool camera_mode_enabled = true;
-bool tab_key_pressed = false;
-
 bool firstMouse = true;
 float yaw = -90.0f;
 float pitch = 0.0f;
@@ -237,16 +234,9 @@ float lastX = 800.0f / 2.0;
 float lastY = 600.0 / 2.0;
 float fov = 45.0f;
 
-// uniforms
-static int shading_mode = 0; // 0: Phong, 1: Normal, 2: Depth
-static bool use_texture = true;
-
 // timing
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
-
-// Add light
-glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
 
 int main()
 {
@@ -285,15 +275,6 @@ int main()
 
     // configure global opengl state
     glEnable(GL_DEPTH_TEST);
-
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO &io = ImGui::GetIO();
-    (void)io;
-    ImGui::StyleColorsDark();
-    // Setup Platform/Renderer backends
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init("#version 330");
 
     // build and compile our shader program, using learnopengl provided Shader class
     Shader ourShader("resources/vertShader.vert", "resources/fragShader.frag");
@@ -423,20 +404,6 @@ int main()
 
         processInput(window);
 
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
-
-        ImGui::Begin("Controls");
-        ImGui::Text("Shading Mode");
-        ImGui::RadioButton("Phong", &shading_mode, 0);
-        ImGui::SameLine();
-        ImGui::RadioButton("Normal", &shading_mode, 1);
-        ImGui::SameLine();
-        ImGui::RadioButton("Depth", &shading_mode, 2);
-        ImGui::Checkbox("Use texture mapping", &use_texture);
-        ImGui::End();
-
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -446,13 +413,7 @@ int main()
         glBindTexture(GL_TEXTURE_2D, texture2);
 
         ourShader.use();
-        ourShader.setInt("shadingMode", shading_mode);
-        ourShader.setBool("useTexture", use_texture);
 
-        // give camera and light position and color
-        ourShader.setVec3("lightPos", lightPos);
-        ourShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
-        ourShader.setVec3("viewPos", cameraPos);
         glm::mat4 projection = glm::perspective(glm::radians(fov), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         ourShader.setMat4("projection", projection);
 
@@ -470,21 +431,15 @@ int main()
 
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
 
     glfwTerminate();
-
     return 0;
 }
 
@@ -503,27 +458,6 @@ void processInput(GLFWwindow *window)
         cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-    if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS && !tab_key_pressed)
-    {
-        tab_key_pressed = true;
-        camera_mode_enabled = !camera_mode_enabled; // Flip the mode
-
-        if (camera_mode_enabled)
-        {
-            // Hide and capture the cursor for camera control
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        }
-        else
-        {
-            // Show the cursor for UI interaction
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-        }
-    }
-    // Reset our helper variable when the key is released
-    if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_RELEASE)
-    {
-        tab_key_pressed = false;
-    }
 }
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height)
@@ -534,12 +468,6 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 // Camera controls
 void mouse_callback(GLFWwindow *window, double xposIn, double yposIn)
 {
-    ImGuiIO &io = ImGui::GetIO();
-    if (io.WantCaptureMouse || !camera_mode_enabled)
-    {
-        firstMouse = true;
-        return;
-    }
     float xpos = static_cast<float>(xposIn);
     float ypos = static_cast<float>(yposIn);
 
@@ -576,11 +504,6 @@ void mouse_callback(GLFWwindow *window, double xposIn, double yposIn)
 
 void scroll_callback(GLFWwindow *window, double xoffset, double yoffset)
 {
-    ImGuiIO &io = ImGui::GetIO();
-    if (io.WantCaptureMouse || !camera_mode_enabled)
-    {
-        return;
-    }
     fov -= (float)yoffset;
     if (fov < 1.0f)
         fov = 1.0f;

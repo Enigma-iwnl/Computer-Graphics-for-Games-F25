@@ -29,11 +29,8 @@ add_executable(OpenGLApp
     ${IMGUI_SOURCES}
 )
 
-set(RESOURCE_FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/wall.jpg
-)
 
-file(COPY ${RESOURCE_FILES} DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY src/resources DESTINATION ${CMAKE_BINARY_DIR})
 
 # Specify the location of header files
 target_include_directories(OpenGLApp PUBLIC include ${IMGUI_PATH})
